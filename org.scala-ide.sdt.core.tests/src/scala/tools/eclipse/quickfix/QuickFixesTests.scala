@@ -20,7 +20,7 @@ import org.eclipse.jdt.ui.text.java.IProblemLocation
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 
-object QuickFixesTests extends TestProjectSetup("quickfix") {
+trait QuickFixesTests { self: TestProjectSetup =>
 
   def assertStatusOk(status: IStatus) {
     if (!status.isOK() && status.getException() == null) {
@@ -63,9 +63,12 @@ object QuickFixesTests extends TestProjectSetup("quickfix") {
       // do a compiler reload before checking for problems
       val dummy = new Response[Unit]
       compiler.askReload(List(src), dummy)
+      println("Xfuture: " + compiler.settings.future.value)
+      println("deprecation: " + compiler.settings.deprecation.value)
       dummy.get
 
       val problems = compiler.problemsOf(unit)
+      println("problems: " + problems)
       assertTrue("No problems found.", problems.nonEmpty)
       assertNumberOfProblems(expectedQuickFixesList.size, problems.toArray)
 
@@ -90,6 +93,7 @@ object QuickFixesTests extends TestProjectSetup("quickfix") {
         // get collection of offered quickfix message
         import scala.collection.JavaConversions._
         val corrections: List[String] = (proposals: Buffer[IJavaCompletionProposal]).toList.map(_.getDisplayString)
+        println("corrections: " + corrections)
 
         // check all expected quick fixes
         //assertEquals(expectedQuickFixes.size, corrections.size)
@@ -102,3 +106,5 @@ object QuickFixesTests extends TestProjectSetup("quickfix") {
     }
   }
 }
+
+object QuickFixesTests extends TestProjectSetup("quickfix") with QuickFixesTests
